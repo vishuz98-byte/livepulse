@@ -307,7 +307,18 @@ function loadSession(room){
       const nq = snap.val();
       if(nq===null||nq===undefined) return;
       if(nq!==currentQ){
-        flashThen(()=>{ currentQ=nq; showQ(); });
+        // Presenter moved — blank the screen first, then load new question
+        flashThen(()=>{
+          currentQ=nq;
+          // Show a clean "get ready" screen briefly before showing the new question
+          sec('q-screen');
+          hide('text-sec'); hide('mcq-sec'); hide('ans-box'); hide('next-wait');
+          document.getElementById('q-text').textContent = '…';
+          document.getElementById('q-badge').textContent = `// question ${currentQ+1}`;
+          document.getElementById('q-prog').textContent  = `${currentQ+1} of ${sessionData.questions.length}`;
+          // Small delay so the blank slate is visible, then load the real question
+          setTimeout(()=>showQ(), 300);
+        });
       } else {
         currentQ=nq; showQ();
       }
