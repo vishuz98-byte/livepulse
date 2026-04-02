@@ -461,6 +461,13 @@ const TMETA={
   open:     {label:'Anonymous Text',color:'#f7976a',icon:'💬'},
 };
 
+// ── Always start on builder, clear stale state ──
+window.addEventListener('load',()=>{
+  localStorage.removeItem('lp_active');
+  document.getElementById('builder').classList.add('active');
+  document.getElementById('live').classList.remove('active');
+});
+
 // ── Builder ──
 function addQuestion(){
   questions.push({id:Date.now(),text:'',type:'wordcloud',options:['','']});
@@ -582,11 +589,13 @@ function launchSession(){
 
   if(useFirebase){
     sessionRef=db.ref('sessions/'+roomCode);
-    sessionRef.set(data);
-    sessionRef.child('responses').on('value',snap=>{
-      const d=snap.val()||{};
-      Object.entries(d).forEach(([qi,rs])=>{allResp[qi]=rs||{};});
-      renderResults();
+    sessionRef.set(data).then(()=>{
+      sessionRef.child('responses').on('value',snap=>{
+        if(!questions.length) return;
+        const d=snap.val()||{};
+        Object.entries(d).forEach(([qi,rs])=>{allResp[qi]=rs||{};});
+        renderResults();
+      });
     });
   } else {
     localStorage.setItem('lp_'+roomCode,JSON.stringify(data));
@@ -616,7 +625,8 @@ function showLive(){
 }
 
 function studentUrl(){
-  return window.location.href.replace('presenter.html','student.html')+'?room='+roomCode;
+  const base=window.location.href.split('?')[0].replace('presenter.html','student.html');
+  return base+'?room='+roomCode;
 }
 
 // ── Navigate ──
