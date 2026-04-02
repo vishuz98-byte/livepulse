@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
   --bg:#07080f;--surface:#0f1020;--surface2:#161828;
@@ -166,7 +166,7 @@ textarea.fi:focus,input.fi:focus{border-color:var(--accent);}
 .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:lp 1.5s infinite;}
 
 .qr-box{background:#fff;border-radius:15px;padding:14px;text-align:center;}
-#qr-canvas{width:100%!important;height:auto!important;border-radius:7px;}
+.qr-box img{border-radius:7px;width:200px;height:200px;}
 .qr-code{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:#07080f;letter-spacing:.18em;margin-top:9px;}
 .qr-hint{font-size:10px;color:#999;margin-top:3px;}
 
@@ -340,7 +340,7 @@ textarea.fi:focus,input.fi:focus{border-color:var(--accent);}
   <div class="l-sidebar">
     <div class="live-badge"><div class="live-dot"></div> Live</div>
     <div class="qr-box">
-      <canvas id="qr-canvas"></canvas>
+      <div id="qr-div" style="display:flex;align-items:center;justify-content:center;border-radius:8px;overflow:hidden;"></div>
       <div class="qr-code" id="qr-room">------</div>
       <div class="qr-hint">scan to join</div>
     </div>
@@ -613,12 +613,15 @@ function showLive() {
   console.log('Room code:', roomCode);
 
   // Generate QR
-  const canvas = document.getElementById('qr-canvas');
-  QRCode.toCanvas(canvas, url, {
-    width: 210, margin: 1,
-    color: { dark: '#07080f', light: '#ffffff' }
-  }, (err) => {
-    if (err) console.error('QR error:', err);
+  const qrDiv = document.getElementById('qr-div');
+  qrDiv.innerHTML = '';
+  new QRCode(qrDiv, {
+    text: url,
+    width: 200,
+    height: 200,
+    colorDark: '#07080f',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
   });
 
   document.getElementById('qr-room').textContent = roomCode;
