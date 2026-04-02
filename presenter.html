@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <style>
 :root{
   --bg:#07080f;--surface:#0f1020;--surface2:#161828;
@@ -612,17 +612,10 @@ function showLive() {
   console.log('Student URL:', url);
   console.log('Room code:', roomCode);
 
-  // Generate QR
+  // Generate QR using Google Charts — no library needed
   const qrDiv = document.getElementById('qr-div');
-  qrDiv.innerHTML = '';
-  new QRCode(qrDiv, {
-    text: url,
-    width: 200,
-    height: 200,
-    colorDark: '#07080f',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
-  });
+  const encodedUrl = encodeURIComponent(url);
+  qrDiv.innerHTML = `<img src="https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodedUrl}&choe=UTF-8" style="width:200px;height:200px;border-radius:8px;" alt="QR Code">`;
 
   document.getElementById('qr-room').textContent = roomCode;
   document.getElementById('s-room').textContent  = roomCode;
