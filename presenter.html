@@ -442,6 +442,10 @@ const TMETA = {
 // BOOT — always show builder first
 // ══════════════════════════════════════════
 window.addEventListener('load', () => {
+  // Always boot into builder — never restore old sessions
+  sessionRef = null;
+  roomCode   = '';
+  questions  = [];
   showScreen('builder');
 });
 
@@ -589,36 +593,47 @@ function launchSession() {
   // Write session to Firebase then start listening
   sessionRef = db.ref('sessions/' + roomCode);
   sessionRef.set(data).then(() => {
-    // Listen for responses
+    // Listen for responses — guard against empty questions array
     sessionRef.child('responses').on('value', snap => {
+      if (!questions || questions.length === 0) return;
       const d = snap.val() || {};
       Object.entries(d).forEach(([qi, rs]) => { allResp[qi] = rs || {}; });
       renderResults();
     });
-    // Switch to live screen
     showLive();
   }).catch(err => {
-    alert('Firebase error: ' + err.message);
+    alert('Firebase error: ' + err.message + '\n\nMake sure your Realtime Database is in TEST MODE in Firebase console.');
   });
 }
 
 function showLive() {
   showScreen('live');
   const url = studentUrl();
-  QRCode.toCanvas(document.getElementById('qr-canvas'), url, {
+  console.log('Student URL:', url);
+  console.log('Room code:', roomCode);
+
+  // Generate QR
+  const canvas = document.getElementById('qr-canvas');
+  QRCode.toCanvas(canvas, url, {
     width: 210, margin: 1,
     color: { dark: '#07080f', light: '#ffffff' }
+  }, (err) => {
+    if (err) console.error('QR error:', err);
   });
+
   document.getElementById('qr-room').textContent = roomCode;
-  document.getElementById('s-room').textContent = roomCode;
+  document.getElementById('s-room').textContent  = roomCode;
+
   // Build progress dots
   document.getElementById('prog-dots').innerHTML =
     questions.map((_, i) => `<div class="pdot" id="pd-${i}"></div>`).join('');
+
   renderLiveQ();
 }
 
 function studentUrl() {
-  const base = window.location.href.split('?')[0].replace('presenter.html', 'student.html');
+  const loc = window.location;
+  const base = loc.protocol + '//' + loc.host + loc.pathname.replace('presenter.html', 'student.html');
   return base + '?room=' + roomCode;
 }
 
